@@ -1,12 +1,12 @@
 package com.epavlov.util
 
-import java.io.FileInputStream
+import java.io.BufferedInputStream
 import java.util.*
 
 object Property {
     private val prop = Properties()
     init{
-        FileInputStream("src/main/resources/application.properties").use {
+        BufferedInputStream(this.javaClass.classLoader.getResourceAsStream("application.properties")).use {
             prop.load(it)
         }
     }

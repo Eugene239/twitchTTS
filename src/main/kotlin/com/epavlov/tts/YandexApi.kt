@@ -2,12 +2,14 @@ package com.epavlov.tts
 
 import com.epavlov.tts.speaker.Emotion
 import com.epavlov.tts.speaker.Speaker
+import com.epavlov.util.Property
 import com.squareup.okhttp.HttpUrl
 import javax.sound.sampled.AudioSystem
 
 object YandexApi {
+    private val key = Property.get("yandex.tts.key")
 
-    fun speak(key:String, text:String, speaker: Speaker,emotion: Emotion){
+    fun speak(text:String, speaker: Speaker,emotion: Emotion){
         println("${speaker.name}[${emotion.name}]: $text ")
         val url = "https://tts.voicetech.yandex.net/generate?" +
                 "key=$key&" +
