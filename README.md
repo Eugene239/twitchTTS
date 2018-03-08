@@ -7,7 +7,7 @@ https://github.com/pircbotx/pircbotx
 First of all you need yandex api key 
 https://tech.yandex.ru/speechkit/cloud/
 
-
+To can generate your Twitch oauth: https://twitchapps.com/tmi/
 
 TODO:
 1) add application.properties into resources folder
