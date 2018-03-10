@@ -54,6 +54,7 @@ object Viewers {
          return try {
              client.newCall(request).execute().body().string()
          }catch (e:IOException){
+             log.error(e.toString())
              return ""
          }
     }
@@ -75,17 +76,15 @@ object Viewers {
         timer= Timer("getViewers", true)
                 .schedule(1000, period) {
                     val newList = getList()
-                    log.debug("new Data: $newList")
+                    log.debug("new Data: $newList  old Data: $viewers")
                     newList.filter { !viewers.contains(it) }.forEach {userName->
-                        log.debug("connected $newList / $viewers")
+                        viewers.add(userName)
                         listeners.forEach { it.onConnected(userName) }
                     }
                     viewers.filter {!newList.contains(it) }.forEach { userName->
-                        log.debug("disconnect $newList / $viewers")
+                        viewers.remove(userName)
                         listeners.forEach { it.onDisconnect(userName) }
                     }
-                    viewers.clear()
-                    viewers.addAll(newList)
                 }
     }
     fun stop(){
