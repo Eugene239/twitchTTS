@@ -2,11 +2,13 @@ package com.epavlov.chatbot.viewers
 
 import com.epavlov.util.Property
 import com.google.gson.Gson
+import com.squareup.okhttp.CacheControl
 import com.squareup.okhttp.OkHttpClient
 import com.squareup.okhttp.Request
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
+import java.io.IOException
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
 
@@ -30,49 +32,57 @@ interface  ViewerListener{
 
 object Viewers {
     private val log = LoggerFactory.getLogger(Viewers::class.java)
-    private val period = 2000L
+    private const val period = 10000L
     private var url: String? = ""
     private val gson = Gson()
-    private val viewers = ArrayList<String>()
+    private val  viewers = Collections.synchronizedList(ArrayList<String>())
     private val listeners = ArrayList<ViewerListener>()
     private var timer : TimerTask?=null
     init {
         url = "https://tmi.twitch.tv/group/user/${Property.get("nick")}/chatters"
     }
 
-    private fun getJson(): String {
+    @Throws(Exception::class)
+    private fun getJson(): String  {
         val client = OkHttpClient()
+        client.setConnectTimeout(period.div(2),TimeUnit.SECONDS)
         val request = Request.Builder()
                 .get()
                 .url(url)
+                .cacheControl(CacheControl.Builder().noCache().build())
                 .build()
-        val response= client.newCall(request).execute().body().string()
-        log.debug("response: $response")
-        return response
+         return try {
+             client.newCall(request).execute().body().string()
+         }catch (e:IOException){
+             return ""
+         }
     }
 
     private fun getList(): List<String> {
         try {
             val data = gson.fromJson(getJson(), ViewerEntity::class.java)
-            return data.chatters.viewers
+            data?.chatters?.viewers?.let {
+                return it
+            }
         } catch (e: Exception) {
             log.error(e.toString(), e)
         }
-        return listOf()
+        log.debug("returning $viewers")
+        return viewers
     }
 
     fun start() {
         timer= Timer("getViewers", true)
                 .schedule(1000, period) {
-                    log.debug("start task ${LocalDateTime.now()}")
                     val newList = getList()
                     log.debug("new Data: $newList")
                     newList.filter { !viewers.contains(it) }.forEach {userName->
+                        log.debug("connected $newList / $viewers")
                         listeners.forEach { it.onConnected(userName) }
                     }
                     viewers.filter {!newList.contains(it) }.forEach { userName->
-                        listeners.forEach { it.onDisconnect(userName)
-                        }
+                        log.debug("disconnect $newList / $viewers")
+                        listeners.forEach { it.onDisconnect(userName) }
                     }
                     viewers.clear()
                     viewers.addAll(newList)
