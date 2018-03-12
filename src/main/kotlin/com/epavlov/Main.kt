@@ -12,4 +12,5 @@ fun main(args: Array<String>) {
     val yandexKey = Property.get("yandex.tts.key")
     val bot=TwitchPircBot(nick,oauth, channel.split(","),YandexSpeaker(yandexKey))
     bot.start()
+
 }

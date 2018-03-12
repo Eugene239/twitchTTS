@@ -6,7 +6,6 @@ import com.epavlov.tts.speaker.SpeakerI
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
 import org.pircbotx.hooks.ListenerAdapter
-import org.pircbotx.hooks.events.ActionEvent
 import org.pircbotx.hooks.events.MessageEvent
 import org.slf4j.LoggerFactory
 
@@ -26,7 +25,6 @@ class TwitchPircBot(userName:String, token:String, channels:List<String>,val spe
 
     }
     fun start(){
-
         Viewers.addListener(object :ViewerListener{
             override fun onDisconnect(userName: String) {
                 log.info("[DISCONNECTED] $userName")
@@ -36,13 +34,10 @@ class TwitchPircBot(userName:String, token:String, channels:List<String>,val spe
                 log.info("[CONNECTED] $userName")
                 speaker.speak("Приветствую тебя, $userName",speaker.getNames().shuffled()[0])
             }
-
         })
         Viewers.start()
         //Connect to the server
         bot!!.startBot()
-
-
     }
 
     override fun onMessage(event: MessageEvent?) {
@@ -53,8 +48,4 @@ class TwitchPircBot(userName:String, token:String, channels:List<String>,val spe
         }
     }
 
-    override fun onAction(event: ActionEvent?) {
-        super.onAction(event)
-        log.info(event.toString())
-    }
 }
